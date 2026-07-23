@@ -1,0 +1,15 @@
+{
+  "name": "shot-list-maker-tauri",
+  "private": true,
+  "version": "1.5.1",
+  "description": "Offline dark-mode shot list and storyboard maker packaged with Tauri 2.",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build:mac": "tauri build --target universal-apple-darwin",
+    "icons": "tauri icon public/app-icon.png"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.2"
+  }
+}

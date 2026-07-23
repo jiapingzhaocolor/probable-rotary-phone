@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="Offline StudioBinder-inspired shot list maker with editable scenes, shots, storyboards, mood boards, scheduling and exports." />
+  <title>Shot List Maker — StudioBinder-inspired</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <aside class="sidebar" aria-label="Production navigation">
+      <nav class="side-nav">
+        <button class="side-item" data-section="write"><span class="side-icon">✎</span><span>Write</span></button>
+        <button class="side-item" data-section="breakdown"><span class="side-icon">◩</span><span>Breakdown</span></button>
+        <button class="side-item active" data-section="visualize"><span class="side-icon">◆</span><span>Visualize</span></button>
+        <button class="side-item" data-section="plan"><span class="side-icon">◢</span><span>Plan</span></button>
+        <button class="side-item" data-section="shoot"><span class="side-icon">▶</span><span>Shoot</span></button>
+        <button class="side-item" data-section="settings"><span class="side-icon">⚙</span><span>Settings</span></button>
+      </nav>
+      <div class="sidebar-footer">LOCAL<br>WORKSPACE</div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div class="project-chip">
+          <span class="version-badge">V2</span>
+          <button id="projectNameButton" class="project-name" title="Rename project">The Girl and the Fox</button>
+        </div>
+        <nav class="module-tabs" aria-label="Visual planning modules">
+          <button class="module-tab" data-module="moodboard"><span>▥</span>Mood Boards</button>
+          <button class="module-tab" data-module="storyboard"><span>▦</span>Storyboards</button>
+          <button class="module-tab active" data-module="shotlist"><span>◉</span>Shot Lists</button>
+        </nav>
+        <div class="top-actions">
+          <button class="icon-button" id="undoButton" title="Undo (Ctrl/Cmd+Z)">↶</button>
+          <button class="icon-button" id="redoButton" title="Redo (Ctrl/Cmd+Shift+Z)">↷</button>
+          <button class="icon-button" id="shareButton" title="Share or copy summary">↗</button>
+          <button class="icon-button" id="helpButton" title="Keyboard shortcuts">?</button>
+          <button id="collaboratorsButton" class="avatar-stack avatar-button" title="Manage collaborators" aria-label="Manage collaborators"></button>
+          <button id="companyButton" class="company-menu"><span class="company-name">Shot List Studio</span><span>⌄</span></button>
+          <button id="profileButton" class="profile-avatar" title="Edit profile">JW</button>
+        </div>
+      </header>
+
+      <section id="shotToolbar" class="toolbar">
+        <div class="toolbar-left">
+          <button id="panelToggle" class="square-button active" title="Toggle scene panel">▥</button>
+          <label class="select-wrap">
+            <span class="sr-only">Shot list</span>
+            <select id="listSelector" aria-label="Shot list"></select>
+          </label>
+          <button id="listManageButton" class="icon-button compact" title="Manage shot lists">•••</button>
+          <span class="crumb">Sc. <button id="sceneNumberButton">1</button></span>
+          <span class="crumb scene-heading"><button id="sceneHeadingButton">EXT. RIVER - DAY</button></span>
+          <span id="itemCount" class="item-count"></span>
+        </div>
+        <div class="toolbar-right">
+          <label class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="Search shots" /></label>
+          <label class="select-wrap filter-wrap"><span class="sr-only">Filter shots</span><select id="filterSelector" aria-label="Filter shots"><option value="all">All shots</option><option value="incomplete">Incomplete</option><option value="complete">Completed</option><option value="selected">Selected</option></select></label>
+          <button id="addNewButton" class="primary-button">＋ Add New</button>
+          <div class="view-switch" aria-label="View mode">
+            <button id="listViewButton" class="active" title="List view">☷</button>
+            <button id="boardViewButton" title="Board view">▦</button>
+          </div>
+          <button id="columnsButton" class="square-button" title="Customize columns">☷</button>
+          <button id="importButton" class="square-button" title="Import project JSON or CSV" aria-label="Import JSON or CSV">⇧</button>
+          <button id="exportButton" class="square-button" title="Export">⇩</button>
+          <button id="moreButton" class="square-button" title="More actions">•••</button>
+        </div>
+      </section>
+
+      <section class="content-area">
+        <aside id="scenePanel" class="scene-panel">
+          <div class="scene-panel-header"><span>SCENES</span><button id="addSceneButton" title="Add scene">＋</button></div>
+          <div id="sceneList" class="scene-list"></div>
+        </aside>
+
+        <section class="shot-area">
+          <div id="sceneTitleRow" class="scene-title-row">
+            <div class="scene-title"><span class="scene-symbol">◉</span><strong id="sceneTitleText">Sc. 1 | EXT. RIVER - DAY</strong><span id="sceneStats"></span></div>
+            <div class="scene-actions">
+              <button id="sceneActionsButton" class="text-button">Scene actions ▾</button>
+              <button id="selectAllButton" class="text-button">Select all</button>
+              <button id="clearCompletedButton" class="text-button">Clear completed</button>
+            </div>
+          </div>
+
+          <div id="bulkBar" class="bulk-bar hidden">
+            <strong id="bulkCount">0 selected</strong>
+            <button data-bulk="complete">Mark complete</button>
+            <button data-bulk="incomplete">Mark incomplete</button>
+            <button data-bulk="duplicate">Duplicate</button>
+            <button data-bulk="move">Move to scene</button>
+            <button data-bulk="delete" class="danger-text">Delete</button>
+            <button data-bulk="clear" class="bulk-clear">Clear selection</button>
+          </div>
+
+          <div id="tableView" class="table-view"><div id="shotTable" class="shot-table" role="table" aria-label="Shot list"></div></div>
+          <div id="boardView" class="board-view hidden"></div>
+          <div id="auxView" class="aux-view hidden"></div>
+          <div id="emptyState" class="empty-state hidden">
+            <div class="empty-icon">🎬</div><h2 id="emptyTitle">No shots yet</h2><p id="emptyMessage">Build this scene one shot at a time.</p><button class="primary-button" id="emptyAddButton">＋ Add Shot</button>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <input id="jsonFileInput" type="file" accept="application/json,text/csv,text/tab-separated-values,.json,.csv,.tsv,.txt" hidden />
+  <input id="imageFileInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
+  <input id="moodImageFileInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden />
+  <div id="popoverLayer" class="popover-layer" aria-live="polite"></div>
+
+  <dialog id="shotDialog" class="app-dialog">
+    <form id="shotForm">
+      <div class="dialog-header"><div><span class="eyebrow">SHOT DETAILS</span><h2 id="shotDialogTitle">Add Shot</h2></div><button type="button" class="dialog-close" data-close-dialog="shotDialog" aria-label="Close">×</button></div>
+      <div class="dialog-body shot-form-grid">
+        <div class="shot-image-editor span-2"><img id="formImagePreview" alt="Shot reference preview"><div><button id="chooseShotImageButton" type="button" class="secondary-button">Choose image</button><button id="removeShotImageButton" type="button" class="text-button">Remove</button><small>Images are resized before local saving.</small></div></div>
+        <label class="field"><span>Scene</span><input id="formScene" type="text" /></label>
+        <label class="field"><span>Shot number</span><input id="formShotNumber" type="text" /></label>
+        <label class="field span-2"><span>Description</span><textarea id="formDescription" rows="3" placeholder="Describe the action and composition" required></textarea></label>
+        <label class="field"><span>Subject</span><input id="formSubject" type="text" placeholder="Maya" /></label>
+        <label class="field"><span>Estimated time</span><input id="formTime" type="text" placeholder="10m" /></label>
+        <label class="field"><span>Shot size</span><select id="formShotSize"></select></label>
+        <label class="field"><span>Shot type</span><select id="formShotType"></select></label>
+        <label class="field"><span>Movement</span><select id="formMovement"></select></label>
+        <label class="field"><span>Equipment</span><select id="formEquipment"></select></label>
+        <label class="field"><span>Lens</span><input id="formLens" type="text" placeholder="50mm" /></label>
+        <label class="field"><span>Frame rate</span><input id="formFrameRate" type="text" placeholder="24 fps" /></label>
+        <label class="field span-2"><span>Notes</span><textarea id="formNotes" rows="2" placeholder="Lighting, performance, continuity, or sound notes"></textarea></label>
+      </div>
+      <div class="dialog-footer"><button type="button" data-close-dialog="shotDialog" class="secondary-button">Cancel</button><button id="saveShotButton" type="submit" class="primary-button">Save Shot</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="setupDialog" class="app-dialog compact-dialog">
+    <form id="setupForm">
+      <div class="dialog-header"><div><span class="eyebrow">CAMERA SETUP</span><h2 id="setupDialogTitle">Add Setup Marker</h2></div><button type="button" class="dialog-close" data-close-dialog="setupDialog">×</button></div>
+      <div class="dialog-body form-stack"><label class="field"><span>Setup name</span><input id="setupName" type="text" value="End of Setup" required /></label><div class="two-fields"><label class="field"><span>Start time</span><input id="setupStart" type="time" value="08:00" /></label><label class="field"><span>End time</span><input id="setupEnd" type="time" value="10:30" /></label></div><label class="field"><span>Notes</span><textarea id="setupNotes" rows="2"></textarea></label></div>
+      <div class="dialog-footer"><button type="button" data-close-dialog="setupDialog" class="secondary-button">Cancel</button><button type="submit" class="primary-button">Save Setup</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="bannerDialog" class="app-dialog compact-dialog">
+    <form id="bannerForm">
+      <div class="dialog-header"><div><span class="eyebrow">PRODUCTION BANNER</span><h2 id="bannerDialogTitle">Add Banner</h2></div><button type="button" class="dialog-close" data-close-dialog="bannerDialog">×</button></div>
+      <div class="dialog-body form-stack"><label class="field"><span>Banner label</span><input id="bannerLabel" type="text" value="Meal Break — 12:00 pm to 1:00 pm" required /></label><label class="field"><span>Style</span><select id="bannerStyle"><option value="indigo">Indigo</option><option value="slate">Slate</option><option value="green">Green</option><option value="red">Red</option></select></label></div>
+      <div class="dialog-footer"><button type="button" data-close-dialog="bannerDialog" class="secondary-button">Cancel</button><button type="submit" class="primary-button">Save Banner</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="sceneDialog" class="app-dialog compact-dialog">
+    <form id="sceneForm">
+      <div class="dialog-header"><div><span class="eyebrow">SCENE</span><h2 id="sceneDialogTitle">Add Scene</h2></div><button type="button" class="dialog-close" data-close-dialog="sceneDialog">×</button></div>
+      <div class="dialog-body form-stack"><label class="field"><span>Scene number</span><input id="sceneFormNumber" type="text" required /></label><label class="field"><span>Scene heading</span><input id="sceneFormHeading" type="text" placeholder="INT. LOCATION - DAY" required /></label><label class="field"><span>Scene notes</span><textarea id="sceneFormNotes" rows="3"></textarea></label></div>
+      <div class="dialog-footer"><button type="button" data-close-dialog="sceneDialog" class="secondary-button">Cancel</button><button type="submit" class="primary-button">Save Scene</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="listDialog" class="app-dialog columns-dialog">
+    <div class="dialog-header"><div><span class="eyebrow">SHOT LISTS</span><h2>Manage Shot Lists</h2></div><button type="button" class="dialog-close" data-close-dialog="listDialog">×</button></div>
+    <div class="dialog-body"><div id="listManager" class="list-manager"></div><button id="newListButton" type="button" class="secondary-button full-button">＋ New Shot List</button></div>
+    <div class="dialog-footer"><button type="button" data-close-dialog="listDialog" class="primary-button">Done</button></div>
+  </dialog>
+
+  <dialog id="columnsDialog" class="app-dialog columns-dialog">
+    <div class="dialog-header"><div><span class="eyebrow">TABLE LAYOUT</span><h2>Customize Columns</h2></div><button type="button" class="dialog-close" data-close-dialog="columnsDialog">×</button></div>
+    <div class="dialog-body"><p class="dialog-hint">Show, hide, or reorder optional columns.</p><div id="columnOptions" class="column-options"></div></div>
+    <div class="dialog-footer"><button id="resetColumnsButton" type="button" class="secondary-button">Reset</button><button type="button" data-close-dialog="columnsDialog" class="primary-button">Done</button></div>
+  </dialog>
+
+  <dialog id="collaboratorsDialog" class="app-dialog compact-dialog">
+    <div class="dialog-header"><div><span class="eyebrow">PEOPLE</span><h2>Collaborators</h2></div><button type="button" class="dialog-close" data-close-dialog="collaboratorsDialog">×</button></div>
+    <div class="dialog-body"><div id="collaboratorList" class="collaborator-list"></div><div class="inline-add"><input id="collaboratorName" type="text" placeholder="Name"><input id="collaboratorRole" type="text" placeholder="Role"><button id="addCollaboratorButton" type="button" class="secondary-button">Add</button></div></div>
+    <div class="dialog-footer"><button type="button" data-close-dialog="collaboratorsDialog" class="primary-button">Done</button></div>
+  </dialog>
+
+  <dialog id="helpDialog" class="app-dialog compact-dialog">
+    <div class="dialog-header"><div><span class="eyebrow">SHORTCUTS</span><h2>Work Faster</h2></div><button type="button" class="dialog-close" data-close-dialog="helpDialog">×</button></div>
+    <div class="dialog-body shortcuts"><div><span>Add shot</span><kbd>N</kbd></div><div><span>Add setup</span><kbd>S</kbd></div><div><span>Add banner</span><kbd>B</kbd></div><div><span>Find shots</span><kbd>/</kbd></div><div><span>Undo</span><kbd>Ctrl/Cmd Z</kbd></div><div><span>Redo</span><kbd>Ctrl/Cmd Shift Z</kbd></div><div><span>Save inline edit</span><kbd>Enter / Ctrl Enter</kbd></div><div><span>Close menu</span><kbd>Esc</kbd></div></div>
+    <div class="dialog-footer"><button type="button" data-close-dialog="helpDialog" class="primary-button">Got it</button></div>
+  </dialog>
+
+  <dialog id="exportDialog" class="app-dialog export-dialog">
+    <div class="dialog-header"><div><span class="eyebrow">DELIVER</span><h2>Export</h2></div><button type="button" class="dialog-close" data-close-dialog="exportDialog">×</button></div>
+    <div class="dialog-body export-options">
+      <div class="export-group-title">SHOT LIST PDF · TEXT ONLY</div>
+      <button type="button" data-export="shot-pdf-current"><strong>Current Scene Shot List</strong><span>Only the active scene</span></button>
+      <button type="button" data-export="shot-pdf-film"><strong>Full Film Shot List</strong><span>Every scene in the active shot list</span></button>
+      <button type="button" data-export="shot-pdf-all"><strong>All Shot Lists PDF</strong><span>Every shot list and scene in this project</span></button>
+
+      <div class="export-group-title">STORYBOARD PDF · 16 FRAMES PER PAGE</div>
+      <button type="button" data-export="storyboard-current"><strong>Current Scene Storyboard</strong><span>Storyboard frames from the active scene</span></button>
+      <button type="button" data-export="storyboard-film"><strong>Full Film Storyboard</strong><span>Storyboard frames from every scene in the active shot list</span></button>
+      <button type="button" data-export="storyboard-all"><strong>All Shot Lists Storyboard</strong><span>Storyboard frames from the entire project</span></button>
+
+      <div class="export-group-title">DATA</div>
+      <button type="button" data-export="csv-current"><strong>Current Scene CSV</strong><span>Only the active scene</span></button>
+      <button type="button" data-export="csv-film"><strong>Full Film CSV</strong><span>Every scene in the active shot list</span></button>
+      <button type="button" data-export="csv-all"><strong>All Shot Lists CSV</strong><span>Every shot list and scene</span></button>
+      <button type="button" data-export="json"><strong>Project JSON Backup</strong><span>All editable data and embedded images</span></button>
+    </div>
+  </dialog>
+
+  <dialog id="utilityDialog" class="app-dialog utility-dialog">
+    <div class="dialog-header"><div><span id="utilityEyebrow" class="eyebrow">WORKSPACE</span><h2 id="utilityTitle">Workspace</h2></div><button type="button" class="dialog-close" data-close-dialog="utilityDialog">×</button></div>
+    <div id="utilityBody" class="dialog-body"></div>
+    <div id="utilityFooter" class="dialog-footer"><button type="button" data-close-dialog="utilityDialog" class="primary-button">Done</button></div>
+  </dialog>
+
+  <dialog id="promptDialog" class="app-dialog compact-dialog">
+    <form id="promptForm">
+      <div class="dialog-header"><div><span class="eyebrow">EDIT</span><h2 id="promptTitle">Enter a value</h2></div><button type="button" class="dialog-close" data-prompt-cancel>×</button></div>
+      <div class="dialog-body"><label class="field"><span id="promptLabel">Value</span><input id="promptInput" type="text" required></label></div>
+      <div class="dialog-footer"><button type="button" data-prompt-cancel class="secondary-button">Cancel</button><button type="submit" class="primary-button">Save</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="confirmDialog" class="app-dialog compact-dialog">
+    <div class="dialog-header"><div><span class="eyebrow">CONFIRM</span><h2 id="confirmTitle">Are you sure?</h2></div><button type="button" class="dialog-close" data-confirm-cancel>×</button></div>
+    <div class="dialog-body"><p id="confirmMessage" class="confirm-message"></p></div>
+    <div class="dialog-footer"><button type="button" data-confirm-cancel class="secondary-button">Cancel</button><button id="confirmAcceptButton" type="button" class="primary-button danger-button">Confirm</button></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
